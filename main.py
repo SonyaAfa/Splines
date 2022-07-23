@@ -6,48 +6,6 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import scatter
 import sys #для записи в файл
 
-#natural cubic spiline
-def ncs(Nodes):
-    n=len(Nodes)-1
-    a=np.zeros(n+1)
-    j=0
-    for i in Nodes:
-        a[j]=i[1]
-        j+=1
-    b = np.zeros(n)
-    d=np.zeros(n)
-    h=np.zeros(n)
-    for i in range(n):
-        h[i]=Nodes[i+1][0]-Nodes[i][0]
-    alpha=np.zeros(n)
-    for i in range(1,n,1):
-        alpha[i]=3/h[i]*(a[i+1]-a[i])-3/h[i-1]*(a[i]-a[i-1])
-    c=np.zeros(n+1)
-    l = np.zeros(n + 1)
-    mu = np.zeros(n + 1)
-    z = np.zeros(n + 1)
-    l[0]=1
-    mu[0]=0
-    z[0]=0
-    for i in range(1, n, 1):
-        l[i]=2*(Nodes[i+1][0]-Nodes[i-1][0])-h[i-1]*mu[i-1]
-        mu[i]=h[i]/l[i]
-        z[i]=(alpha[i]-h[i-1]*z[i-1])/l[i]
-    l[n]=1
-    z[n]=0
-    c[n]=0
-    for j in range(n-1,-1,-1):
-        c[j]=z[j]-mu[j]*c[j+1]
-        b[j]=(a[j+1]-a[j])/h[j]-(h[j]*(c[j+1]+2*c[j]))/3
-        d[j]=(c[j+1]-c[j])/(3*h[j])
-    output_set=np.zeros((n,5))
-    for i in range(n):
-        output_set[i][0]=a[i]
-        output_set[i][1]=b[i]
-        output_set[i][2] = c[i]
-        output_set[i][3] = d[i]
-        output_set[i][4] = Nodes[i][0]
-    return(output_set)
 
 def spline(x_ax,y_ax):
     #x,y - массивы точек y[i] - значение в точке x[i]
@@ -104,7 +62,7 @@ def list_of_equations(X,Y,nsc):
     return eq
 
 
-def spline(x1,x2,x3,x4,x5,y1,y2,y3,y4,y5):
+def spline(X,Y,x1,x2,x3,x4,x5,y1,y2,y3,y4,y5):
     x=sympy.Symbol('x')
     a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3=sympy.symbols('a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3')
 
@@ -114,92 +72,51 @@ def spline(x1,x2,x3,x4,x5,y1,y2,y3,y4,y5):
     nscD=d0+d1*x+d2*x**2+d3*x**3
 
     nsc = [nscA, nscB, nscC, nscD]
-    X = [x1, x2, x3, x4, x5]
-    Y = [y1, y2, y3, y4, y5]
+    #X = [x1, x2, x3, x4, x5]
+    #Y = [y1, y2, y3, y4, y5]
     eq = list_of_equations(X, Y, nsc)
+    aa = [a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3]
 
-    sol2=sympy.solve(eq,[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3])
-    #print('so',sol)
-    #print('sol2',sol2)
-    #print('sol2a0', sol2[a0])
-    a0=sol2[a0]
-    a1 = sol2[a1]
-    a2 = sol2[a2]
-    a3 = sol2[a3]
+    sol2 = sympy.solve(eq, aa)
+    for i in range(len(aa)):
+        aa[i] = sol2[aa[i]]
 
-    b0 = sol2[b0]
-    b1 = sol2[b1]
-    b2 = sol2[b2]
-    b3 = sol2[b3]
+    #a0 = sol2[a0]
 
-    c0 = sol2[c0]
-    c1 = sol2[c1]
-    c2 = sol2[c2]
-    c3 = sol2[c3]
-
-    d0 = sol2[d0]
-    d1 = sol2[d1]
-    d2 = sol2[d2]
-    d3 = sol2[d3]
+    #запишем коэффициенты в файл
     original_stdout = sys.stdout
     FileGraphMatrix = open('Coefficients', 'w')
     sys.stdout = FileGraphMatrix
-
-    print('a0=')
-    print(a0)#+ '\n')
-    print('a1=')
-    print(a1)#+ '\n') + '\n')
-    print('a2=')
-    print(a2)# + '\n')
-    print('a3=')
-    print( a3 )#+ '\n')
-    print('b0=')
-    print( b0 )#+ '\n')
-    print('b1=')
-    print( b1 )#+ '\n')
-    print('b2=')
-    print( b2 )#+ '\n')
-    print('b3=')
-    print( b3 )#+ '\n')
-    print('c0=')
-    print( c0 )#+ '\n')
-    print('c1=')
-    print( c1 )#+ '\n')
-    print('c2=')
-    print( c2 )#+ '\n')
-    print('c3=')
-    print( c3 )#+ '\n')
-    print('d0=')
-    print( d0 )#+ '\n')
-    print('d1=')
-    print( d1 )#+ '\n')
-    print('d2=')
-    print( d2 )#+ '\n')
-    print('d3=')
-    print( d3 )#+ '\n')
+    for i in range(16):
+        if (i//4==0):
+            letter='a'
+        if (i//4==1):
+            letter='b'
+        if i//4==2:
+            letter='c'
+        if i//4==3:
+            letter='d'
+        print(letter+str(i%4)+'=')
+        print(aa[i])
 
     sys.stdout = original_stdout
     FileGraphMatrix.close()
 
-    return a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3
+    return aa
 
 
-def long_subs(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3,
-              x1,y1,x2,y2,x3,y3,x4,y4,x5,y5,
-              x11,y11,x22,y22,x33,y33,x44,y44,x55,y55):
-    list=[a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3]
-    for i in list:
-        i = i.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
+def long_subs(a,X,Y,X_values,Y_values):
+    for i in range(len(X)):
+        a.subs((X[i]), X_values[i])
+        a.subs(str(Y[i]),Y_values[i])
+    aa=a
+    return aa
 
-    return a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3
-
-
+#nsc - список коэффициентов многочленов
 def draw_pieswize_f(nsc,X):
     x = sympy.Symbol('x')
     l=len(nsc)
     p=[None]*l
-    #p=[1,2,3,4]
-    #p.append(1)
     p[0]=plot(nsc[0][0] + nsc[0][1] * x + nsc[0][2] * x ** 2 + nsc[0][3] * x ** 3,(x,X[0],X[1]),show=False)
     for i in range(1,l):
         p[1]=plot(nsc[i][0] + nsc[i][1] * x + nsc[i][2] * x ** 2 + nsc[i][3] * x ** 3,(x,X[i],X[i+1]),show=False)
@@ -208,12 +125,20 @@ def draw_pieswize_f(nsc,X):
     p[0].show()
 
 #процедура, создающая список символьных переменных
-def list_of_symbols(n):
-    list=[None]*n
+def list_of_symbols(n,j,letter):
+    list_symb=[None]*n
     for i in range(n):
-        stri='x'+str(i)
-        list[i]=stri
-    return list
+        stri=letter+str(j)+str(i)
+        stri = sympy.Symbol(letter+str(j)+str(i))
+        list_symb[i]=stri
+    return list_symb
+
+#процедура, создающая список символьных переменных
+def list_of_symbols4(n,letter):
+    list_symb4=[None]*n
+    for i in range(n):
+        list_symb4[i]=list_of_symbols(4,i,letter)
+    return list_symb4
 
 def main():
    #print('hello')
@@ -236,20 +161,21 @@ def main():
 
 
    a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=sympy.symbols(' a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3')
-   a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3=spline(x1,x2,x3,x4,x5,y1,y2,y3,y4,y5)
+   n=5
+   X=list_of_symbols(n,0,'x')
+   Y=list_of_symbols(n,0,'y')
+   print('X',X)
+   print('Y',Y)
+   X=[x1,x2,x3,x4,x5]
+   Y=[y1,y2,y3,y4,y5]
+   [a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]=spline(X,Y,x1,x2,x3,x4,x5,y1,y2,y3,y4,y5)
 
    #a0, a1, a2, a3 = polynom_with_boundary_conditions(x1, y1, x2, y2)
    #b0, b1, b2, b3 = polynom_with_boundary_conditions(x2, y2, x3, y3)
    #c0, c1, c2, c3 = polynom_with_boundary_conditions(x3, y3, x4, y4)
    #d0, d1, d2, d3 = polynom_with_boundary_conditions(x4, y4, x5, y5)
 
-   #f = a0 + a1 * x + a2 * x ** 2 + a3 * x ** 3
-   #Df = a1 + 2 * a2 * x + 3 * a3 * x ** 2
-   #print('f', f)
-   #print('fx1', sympy.simplify(f.subs(x, x1)))
-   #print('fx2', sympy.simplify(f.subs(x, x2)))
-   #print('dfx1', sympy.simplify(Df.subs(x, x1)))
-   #print('dfx2', sympy.simplify(Df.subs(x, x2)))
+
    x11=0
    x22=1
    x33=2
@@ -260,7 +186,8 @@ def main():
    y33=-2
    y44=3
    y55=-1
-
+   X_values=[0,1,2,3,4]
+   Y_values=[0,1,-2,3,-1]
    #a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=long_subs(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3,
    #           x1,y1,x2,y2,x3,y3,x4,y4,x5,y5,
    #           x11,y11,x22,y22,x33,y33,x44,y44,x55,y55)
@@ -281,6 +208,30 @@ def main():
    #нарисуем график
 
    a0 = a0.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
+   print('a0', a0)
+   a0=long_subs(a0,X,Y,X_values,Y_values)
+
+   print('a0',a0)
+   a1 = long_subs(a1, X, Y, X_values, Y_values)
+   a2 = long_subs(a2, X, Y, X_values, Y_values)
+   a3 = long_subs(a3, X, Y, X_values, Y_values)
+   b0 = long_subs(b0, X, Y, X_values, Y_values)
+   b1 = long_subs(b1, X, Y, X_values, Y_values)
+   b2 = long_subs(b2, X, Y, X_values, Y_values)
+   b3 = long_subs(b3, X, Y, X_values, Y_values)
+   c0=long_subs(c0,X,Y,X_values,Y_values)
+   c1 = long_subs(c1, X, Y, X_values, Y_values)
+   c2 = long_subs(c2, X, Y, X_values, Y_values)
+   c3 = long_subs(c3, X, Y, X_values, Y_values)
+   d0 = long_subs(d0, X, Y, X_values, Y_values)
+   d1 = long_subs(d1, X, Y, X_values, Y_values)
+   d2 = long_subs(d2, X, Y, X_values, Y_values)
+   d3 = long_subs(d3, X, Y, X_values, Y_values)
+
+
+   aa=[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]
+   for i in aa:
+       i=i.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
    a1 = a1.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
    a2 = a2.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
    a3 = a3.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
@@ -319,8 +270,10 @@ def main():
   # p1.extend(p4)
   # p1.show()
 
-   list_o=list_of_symbols(5)
+   list_o=list_of_symbols(5,0,'x')
    print(list_o)
+   list1=list_of_symbols4(5,'a')
+   print(list1)
 
 
 # Press the green button in the gutter to run the script.
