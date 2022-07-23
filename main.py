@@ -194,21 +194,17 @@ def long_subs(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3,
     return a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3
 
 
-def draw_pieswize_f(a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3,x11,x22,x33,x44,x55):
+def draw_pieswize_f(nsc,X):
     x = sympy.Symbol('x')
-    p=[None]*4
+    l=len(nsc)
+    p=[None]*l
     #p=[1,2,3,4]
     #p.append(1)
-    p[0] = plot(a0 + a1 * x + a2 * x ** 2 + a3 * x ** 3, (x, x11, x22), show=False)
-    p[0].line_color = 'cyan'
-    p[1] = plot(b0 + b1 * x + b2 * x ** 2 + b3 * x ** 3, (x, x22, x33), show=False)
-    p[1].line_color = 'red'
-    p[2] = plot(c0 + c1 * x + c2 * x ** 2 + c3 * x ** 3, (x, x33, x44), show=False, line_color='red')
-    p[3] = plot(d0 + d1 * x + d2 * x ** 2 + d3 * x ** 3, (x, x44, x55), show=False, line_color='blue')
+    p[0]=plot(nsc[0][0] + nsc[0][1] * x + nsc[0][2] * x ** 2 + nsc[0][3] * x ** 3,(x,X[0],X[1]),show=False)
+    for i in range(1,l):
+        p[1]=plot(nsc[i][0] + nsc[i][1] * x + nsc[i][2] * x ** 2 + nsc[i][3] * x ** 3,(x,X[i],X[i+1]),show=False)
+        p[0].extend(p[1])
 
-    p[0].extend(p[1])
-    p[0].extend(p[2])
-    p[0].extend(p[3])
     p[0].show()
 
 #процедура, создающая список символьных переменных
@@ -308,7 +304,9 @@ def main():
        # c0 + c1 * x+c2*x**2+c3*x**3,d0 + d1 * x+d2*x**2+d3*x**3,(x,x11,x55),ylim=(-2,5))
    ##plot(a0+1 + a1 * x + a2 * x ** 2, (x, 0, 1))
 
-   draw_pieswize_f(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3, x11,x22, x33, x44, x55 )
+   nsc = [[a0,a1,a2,a3], [b0,b1,b2,b3], [c0,c1,c2,c3], [d0,d1,d2,d3]]
+   X = [x11, x22, x33, x44, x55]
+   draw_pieswize_f(nsc,X )
    #p1=   plot(a0 + a1 * x+a2*x**2+a3*x**3,(x,x11,x22),show=False)
   # p1.line_color='cyan'
   # p2 = plot(b0 + b1 * x + b2 * x ** 2 + b3 * x ** 3, (x, x22, x33), show=False)
