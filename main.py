@@ -9,6 +9,7 @@ import sys #для записи в файл
 
 #процедура вычисляющая коэффициента многочлена f(x)=a0+a1x+a2x**2+a3x**3
 # для которого f(x0)=y0,f(x1)=y1,f'(x0)=0, f'(x1)=0
+#эта процедура нигде не нужна
 def polynom_with_boundary_conditions(x0,y0,x1,y1):
     d=x1-x0
     h=y0-y1
@@ -83,25 +84,14 @@ def spline(X,Y):
     Coefficients.close()
     return aa
 
-
-def long_subs(a,X,Y,X_values,Y_values):
-    for i in range(len(X)):
-        a.subs((X[i]), X_values[i])
-        a.subs(str(Y[i]),Y_values[i])
-    aa=a
-    return aa
-
 #nsc - список коэффициентов многочленов
-
 def draw_pieswize_f(nsc,X):
     x = sympy.Symbol('x')
     l=len(nsc)
-
     p0=plot(nsc[0][0] + nsc[0][1] * x + nsc[0][2] * x ** 2 + nsc[0][3] * x ** 3,(x,X[0],X[1]),show=False)
     for i in range(1,l):
         p1=plot(nsc[i][0] + nsc[i][1] * x + nsc[i][2] * x ** 2 + nsc[i][3] * x ** 3,(x,X[i],X[i+1]),show=False)
         p0.extend(p1)
-
     p0.show()
 
 #процедура, создающая список символьных переменных
@@ -113,55 +103,23 @@ def list_of_symbols(n,j,letter):
         list_symb[i]=stri
     return list_symb
 
-#процедура, создающая список символьных переменных
-def list_of_symbols4(n,letter):
-    list_symb4=[None]*n
-    for i in range(n):
-        list_symb4[i]=list_of_symbols(4,i,letter)
-    return list_symb4
+
 
 def main():
-
-
    x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5=sympy.symbols('x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5')
 
    x=sympy.Symbol('x')
-   a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)
-   f=a0+a1*x+a2*x**2+a3*x**3
+   #a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)
+   #f=a0+a1*x+a2*x**2+a3*x**3
 
+   #a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=sympy.symbols(' a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3')
 
-
-   a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=sympy.symbols(' a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3')
-   n=5
-   X=list_of_symbols(n,0,'x')
-   Y=list_of_symbols(n,0,'y')
-   print('X',X)
-   print('Y',Y)
    X=[x1,x2,x3,x4,x5]
    Y=[y1,y2,y3,y4,y5]
    [a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]=spline(X,Y)
 
-   #a0, a1, a2, a3 = polynom_with_boundary_conditions(x1, y1, x2, y2)
-   #b0, b1, b2, b3 = polynom_with_boundary_conditions(x2, y2, x3, y3)
-   #c0, c1, c2, c3 = polynom_with_boundary_conditions(x3, y3, x4, y4)
-   #d0, d1, d2, d3 = polynom_with_boundary_conditions(x4, y4, x5, y5)
-
-
-   x11=0
-   x22=1
-   x33=2
-   x44=3
-   x55=4
-   y11=0
-   y22=1
-   y33=-2
-   y44=3
-   y55=-1
    X_values=[0,1,2,3,4]
-   Y_values=[0,1,-2,3,-1]
-   #a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=long_subs(a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3,
-   #           x1,y1,x2,y2,x3,y3,x4,y4,x5,y5,
-   #           x11,y11,x22,y22,x33,y33,x44,y44,x55,y55)
+   Y_values=[0,1,-2,-1,-1]
 
    nscA = a0 + a1 * x + a2 * x ** 2 + a3 * x ** 3
    nscB = b0 + b1 * x + b2 * x ** 2 + b3 * x ** 3
@@ -170,29 +128,19 @@ def main():
 
 
    #нарисуем график
-
-   a0 = a0.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   print('a0', a0)
-
-
-
    aa=[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]
    for i in range(len(aa)):
-       aa[i]=aa[i].subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
+       aa[i]=aa[i].subs({x1: X_values[0], y1: Y_values[0], x2: X_values[1], y2: Y_values[1], x3: X_values[2], y3: Y_values[2], x4: X_values[3],
+                         y4: Y_values[3], x5: X_values[4], y5: Y_values[4]})
 
-   #nscA = a0 + a1 * x + a2 * x ** 2 + a3 * x ** 3
-   print('a0',a0)
+   #
 
 
    nsc = [[a0,a1,a2,a3], [b0,b1,b2,b3], [c0,c1,c2,c3], [d0,d1,d2,d3]]
    nsc = [[aa[0], aa[1], aa[2], aa[3]], [aa[4], aa[5], aa[6], aa[7]], [aa[8], aa[9], aa[10], aa[11]], [aa[12], aa[13], aa[14], aa[15]]]
-   X = [x11, x22, x33, x44, x55]
-   draw_pieswize_f(nsc,X )
+   #X = [x11, x22, x33, x44, x55]
+   draw_pieswize_f(nsc,X_values )
 
-   list_o=list_of_symbols(5,0,'x')
-   print(list_o)
-   list1=list_of_symbols4(5,'a')
-   print(list1)
 
 
 # Press the green button in the gutter to run the script.
