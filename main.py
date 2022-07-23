@@ -62,7 +62,7 @@ def list_of_equations(X,Y,nsc):
     return eq
 
 
-def spline(X,Y,x1,x2,x3,x4,x5,y1,y2,y3,y4,y5):
+def spline(X,Y):
     x=sympy.Symbol('x')
     a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3=sympy.symbols('a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3')
 
@@ -80,8 +80,6 @@ def spline(X,Y,x1,x2,x3,x4,x5,y1,y2,y3,y4,y5):
     sol2 = sympy.solve(eq, aa)
     for i in range(len(aa)):
         aa[i] = sol2[aa[i]]
-
-    #a0 = sol2[a0]
 
     #запишем коэффициенты в файл
     original_stdout = sys.stdout
@@ -148,16 +146,11 @@ def main():
    #print(f)
 
    x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5=sympy.symbols('x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5')
+
    x=sympy.Symbol('x')
    a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)
-   print('koefficienti',a0,a1,a2,a3)
    f=a0+a1*x+a2*x**2+a3*x**3
-   Df=a1+2*a2*x+3*a3*x**2
-   print('f',f)
-   print('fx0',sympy.simplify(f.subs(x,x0)))
-   print('fx2', sympy.simplify(f.subs(x, x2)))
-   print('dfx0', sympy.simplify(Df.subs(x, x0)))
-   print('dfx2', sympy.simplify(Df.subs(x, x2)))
+
 
 
    a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=sympy.symbols(' a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3')
@@ -168,7 +161,7 @@ def main():
    print('Y',Y)
    X=[x1,x2,x3,x4,x5]
    Y=[y1,y2,y3,y4,y5]
-   [a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]=spline(X,Y,x1,x2,x3,x4,x5,y1,y2,y3,y4,y5)
+   [a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]=spline(X,Y)
 
    #a0, a1, a2, a3 = polynom_with_boundary_conditions(x1, y1, x2, y2)
    #b0, b1, b2, b3 = polynom_with_boundary_conditions(x2, y2, x3, y3)
@@ -197,78 +190,26 @@ def main():
    nscC = c0 + c1 * x + c2 * x ** 2 + c3 * x ** 3
    nscD = d0 + d1 * x + d2 * x ** 2 + d3 * x ** 3
 
-   #nsc = [nscA, nscB, nscC, nscD]
-   #X = [x1, x2, x3, x4, x5]
-   #Y = [y1, y2, y3, y4, y5]
-   #eq = list_of_equations(X, Y, nsc)
-  # print('eq', eq)
-   #print('lenEq', len(eq))
-   #a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)#delete
 
    #нарисуем график
 
    a0 = a0.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
    print('a0', a0)
-   a0=long_subs(a0,X,Y,X_values,Y_values)
 
-   print('a0',a0)
-   a1 = long_subs(a1, X, Y, X_values, Y_values)
-   a2 = long_subs(a2, X, Y, X_values, Y_values)
-   a3 = long_subs(a3, X, Y, X_values, Y_values)
-   b0 = long_subs(b0, X, Y, X_values, Y_values)
-   b1 = long_subs(b1, X, Y, X_values, Y_values)
-   b2 = long_subs(b2, X, Y, X_values, Y_values)
-   b3 = long_subs(b3, X, Y, X_values, Y_values)
-   c0=long_subs(c0,X,Y,X_values,Y_values)
-   c1 = long_subs(c1, X, Y, X_values, Y_values)
-   c2 = long_subs(c2, X, Y, X_values, Y_values)
-   c3 = long_subs(c3, X, Y, X_values, Y_values)
-   d0 = long_subs(d0, X, Y, X_values, Y_values)
-   d1 = long_subs(d1, X, Y, X_values, Y_values)
-   d2 = long_subs(d2, X, Y, X_values, Y_values)
-   d3 = long_subs(d3, X, Y, X_values, Y_values)
 
 
    aa=[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]
-   for i in aa:
-       i=i.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   a1 = a1.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   a2 = a2.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   a3 = a3.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   b0 = b0.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   b1 = b1.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   b2 = b2.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   b3 = b3.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   c0 = c0.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   c1 = c1.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   c2 = c2.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   c3 = c3.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-
-   d0 = d0.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   d1 = d1.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   d2 = d2.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
-   d3 = d3.subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
+   for i in range(len(aa)):
+       aa[i]=aa[i].subs({x1: x11, y1: y11, x2: x22, y2: y22, x3: x33, y3: y33, x4: x44, y4: y44, x5: x55, y5: y55})
 
    #nscA = a0 + a1 * x + a2 * x ** 2 + a3 * x ** 3
    print('a0',a0)
-   ##plot(a0 + a1 * x+a2*x**2+a3*x**3,b0 + b1 * x+b2*x**2+b3*x**3,
-       # c0 + c1 * x+c2*x**2+c3*x**3,d0 + d1 * x+d2*x**2+d3*x**3,(x,x11,x55),ylim=(-2,5))
-   ##plot(a0+1 + a1 * x + a2 * x ** 2, (x, 0, 1))
+
 
    nsc = [[a0,a1,a2,a3], [b0,b1,b2,b3], [c0,c1,c2,c3], [d0,d1,d2,d3]]
+   nsc = [[aa[0], aa[1], aa[2], aa[3]], [aa[4], aa[5], aa[6], aa[7]], [aa[8], aa[9], aa[10], aa[11]], [aa[12], aa[13], aa[14], aa[15]]]
    X = [x11, x22, x33, x44, x55]
    draw_pieswize_f(nsc,X )
-   #p1=   plot(a0 + a1 * x+a2*x**2+a3*x**3,(x,x11,x22),show=False)
-  # p1.line_color='cyan'
-  # p2 = plot(b0 + b1 * x + b2 * x ** 2 + b3 * x ** 3, (x, x22, x33), show=False)
-  # p2.line_color = 'red'
-  # p3 = plot(c0 + c1 * x + c2 * x ** 2 + c3 * x ** 3, (x, x33, x44), show=False,line_color='red')
-  # p4 = plot(d0 + d1 * x + d2 * x ** 2 + d3 * x ** 3, (x, x44, x55), show=False,line_color='blue')
-
-   #p1.extend(p2)
-  # p1.extend(p3)
-  # p1.extend(p4)
-  # p1.show()
 
    list_o=list_of_symbols(5,0,'x')
    print(list_o)
