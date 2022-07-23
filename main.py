@@ -7,21 +7,6 @@ from matplotlib.pyplot import scatter
 import sys #для записи в файл
 
 
-def spline(x_ax,y_ax):
-    #x,y - массивы точек y[i] - значение в точке x[i]
-    #x=sympy.Symbol('x')
-    #x=sympy.symbols('x')
-    x=Symbol('x')
-    if len(x_ax)!=len(y_ax):
-        print('length wrong')
-    else:
-        g=x+1+sympy.sin(x)
-        f=sympy.zeros(len(x_ax))
-        for i in range(len(x_ax)-1):
-            f[i]=1
-            #f[i]=(y_ax[i+1]-y_ax[i])/(x_ax[i+1]-x_ax[i])*x+(x_ax[i+1]*y_ax[i]-x_ax[i]*y_ax[i+1])/(x_ax[i+1]-x_ax[i])
-    return f,g
-
 #процедура вычисляющая коэффициента многочлена f(x)=a0+a1x+a2x**2+a3x**3
 # для которого f(x0)=y0,f(x1)=y1,f'(x0)=0, f'(x1)=0
 def polynom_with_boundary_conditions(x0,y0,x1,y1):
@@ -32,9 +17,6 @@ def polynom_with_boundary_conditions(x0,y0,x1,y1):
     a2=-3*h/(d**2)-6*h*x0/(d**3)
     a3=2*h/(d**3)
     return a0,a1,a2,a3
-
-
-
 
 #процедура составляющая список уравнений для сплайна по массивам точек X,Y points(x[i],y[i])
 def list_of_equations(X,Y,nsc):
