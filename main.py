@@ -65,8 +65,8 @@ def spline(X,Y):
 
     #запишем коэффициенты в файл
     original_stdout = sys.stdout
-    FileGraphMatrix = open('Coefficients', 'w')
-    sys.stdout = FileGraphMatrix
+    Coefficients = open('Coefficients', 'w')
+    sys.stdout = Coefficients
     for i in range(16):
         if (i//4==0):
             letter='a'
@@ -80,8 +80,7 @@ def spline(X,Y):
         print(aa[i])
 
     sys.stdout = original_stdout
-    FileGraphMatrix.close()
-
+    Coefficients.close()
     return aa
 
 
@@ -93,16 +92,17 @@ def long_subs(a,X,Y,X_values,Y_values):
     return aa
 
 #nsc - список коэффициентов многочленов
+
 def draw_pieswize_f(nsc,X):
     x = sympy.Symbol('x')
     l=len(nsc)
-    p=[None]*l
-    p[0]=plot(nsc[0][0] + nsc[0][1] * x + nsc[0][2] * x ** 2 + nsc[0][3] * x ** 3,(x,X[0],X[1]),show=False)
-    for i in range(1,l):
-        p[1]=plot(nsc[i][0] + nsc[i][1] * x + nsc[i][2] * x ** 2 + nsc[i][3] * x ** 3,(x,X[i],X[i+1]),show=False)
-        p[0].extend(p[1])
 
-    p[0].show()
+    p0=plot(nsc[0][0] + nsc[0][1] * x + nsc[0][2] * x ** 2 + nsc[0][3] * x ** 3,(x,X[0],X[1]),show=False)
+    for i in range(1,l):
+        p1=plot(nsc[i][0] + nsc[i][1] * x + nsc[i][2] * x ** 2 + nsc[i][3] * x ** 3,(x,X[i],X[i+1]),show=False)
+        p0.extend(p1)
+
+    p0.show()
 
 #процедура, создающая список символьных переменных
 def list_of_symbols(n,j,letter):
@@ -121,11 +121,7 @@ def list_of_symbols4(n,letter):
     return list_symb4
 
 def main():
-   #print('hello')
-   #x=np.array([0,1,2])
-   #y=np.array([0,1,2])
-   #f=spline(x,y)
-   #print(f)
+
 
    x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5=sympy.symbols('x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5')
 
