@@ -121,10 +121,6 @@ def main():
    X_values=[0,1,2,3,4]
    Y_values=[0,1,-2,-1,-1]
 
-   nscA = a0 + a1 * x + a2 * x ** 2 + a3 * x ** 3
-   nscB = b0 + b1 * x + b2 * x ** 2 + b3 * x ** 3
-   nscC = c0 + c1 * x + c2 * x ** 2 + c3 * x ** 3
-   nscD = d0 + d1 * x + d2 * x ** 2 + d3 * x ** 3
 
 
    #нарисуем график
