@@ -152,42 +152,36 @@ def list_of_2dsymbols(n,m,letter):
     return list_symb
 
 def main():
-   #x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5=sympy.symbols('x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5')#в идеале убрать
 
    x=sympy.Symbol('x')
    #a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)
    #f=a0+a1*x+a2*x**2+a3*x**3
 
-   n=5
+   n=4
 
-   X=list_of_symbols(n,'x')#new
-   Y=list_of_symbols(n,'y')#new
+   X=list_of_symbols(n,'x')
+   Y=list_of_symbols(n,'y')
 
-   #[[a0,a1,a2,a3],[b0,b1,b2,b3],[c0,c1,c2,c3],[d0,d1,d2,d3]]=spline(n,X,Y)
    SplineCoeff = spline(n, X, Y)
 
-   X_values=[-1,1,2,3,4]
-   Y_values=[0,1,-2,-1,-1]
+   X_values=[-1,1,2,3]
+   Y_values=[0,1,-2,-1]
 
-   #нарисуем график
+   #подставим значения в выражения для коэффициентов
    sc_as_one_list = []
    for i in SplineCoeff:
        sc_as_one_list.extend(i)
-   #aa=[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]
 
 
    for i in range(len(sc_as_one_list)):
        for j in range(n):
            sc_as_one_list[i]=sc_as_one_list[i].subs({X[j]:X_values[j],Y[j]:Y_values[j]})
 
-
-
+   # нарисуем график
    nsc=[]
    for i in range(n-1):
        nsc.append([sc_as_one_list[4*i+0],sc_as_one_list[4*i+1],sc_as_one_list[4*i+2],sc_as_one_list[4*i+3]])
 
-   #nsc = [[aa[0], aa[1], aa[2], aa[3]], [aa[4], aa[5], aa[6], aa[7]], [aa[8], aa[9], aa[10], aa[11]], [aa[12], aa[13], aa[14], aa[15]]]
-   #X = [x11, x22, x33, x44, x55]
    draw_pieswize_f(nsc,X_values )
 
    #БИСПЛАЙН
