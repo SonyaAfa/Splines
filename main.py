@@ -19,7 +19,7 @@ def polynom_with_boundary_conditions(x0,y0,x1,y1):
     a3=2*h/(d**3)
     return a0,a1,a2,a3
 
-#процедура составляющая список уравнений для сплайна по массивам точек X,Y points(x[i],y[i])
+#процедура составляющая список уравнений для 1-сплайна по массивам точек X,Y points(x[i],y[i])
 def list_of_equations(X,Y,nsc):
     x = sympy.Symbol('x')
     l=len(X)
@@ -44,41 +44,79 @@ def list_of_equations(X,Y,nsc):
         eq.append(eq4)
     return eq
 
+#процедура составляющая список уравнений для 2-сплайна по массивам точек X,Y,Z
+# Z=[[F(x0,y0),F(x0,y1),F(x0,y2)..F(x0,yn)],[],..[]]
+def list_of_equations_for_bispline(X,Y,Z,nsc):
+    x,y=sympy.symbols('x,y')
+    lx=len(X)
+    ly=len(Y)
+    eq=[]
+    #уравнения для значений в точках
+    for i in range(lx):
+        for j in range(ly):
+            eqij=nsc[j][i].subs({x:X[i],y:Y[j]})-Z[i][j]
+            eq.append(eqij)
+    #уравнения для значений первых производных на границе прямоугольника
+    for i in range(lx-1):
+        eq1=diff(nsc[0][i],x).subs(x,X[0])
+        eq2=diff(nsc[ly-2][i],x).subs(x,X[lx-1])
+        eq.append(eq1)
+        eq.append(eq2)
+    for i in range(ly-1):
+        eq1=diff(nsc[i][0],y).subs(y,Y[0])
+        eq2=diff(nsc[i][lx-2],y).subs(y,Y[ly-1])
+        eq.append(eq1)
+        eq.append(eq2)
+    # уравнения для значений первых и вторых производных
+    for i in range(1,lx-1):
+        for j in range(ly-1):
+            eq1=diff(nsc[j][i-1],x).subs(x,X[i])-diff(nsc[j][i],x).subs(x,X[i])
+            eq2=diff(nsc[j][i-1],x,2).subs(x,X[i])-diff(nsc[j][i],x,2).subs(x,X[i])
+            eq.append(eq1)
+            eq.append(eq2)
+    for j in range(1,ly-1):
+        for i in range(lx-1):
+            eq1=diff(nsc[j-1][i],y).subs(y,Y[j])-diff(nsc[j][i],y).subs(y,Y[j])
+            eq2 = diff(nsc[j - 1][i], y,2).subs(y, Y[j]) - diff(nsc[j][i], y,2).subs(y, Y[j])
+            eq.append(eq1)
+            eq.append(eq2)
+    return eq
 
-def spline(X,Y):
+def spline(n,X,Y):
     x=sympy.Symbol('x')
-    a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3=sympy.symbols('a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3')
+    #a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3=sympy.symbols('a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3')#replase
+    aa=list_of_2dsymbols(n-1,4,'a')#new
+    aa_as_one_list=[]
+    for i in aa:
+        aa_as_one_list.extend(i)
 
-    nscA=a0+a1*x+a2*x**2+a3*x**3
-    nscB=b0+b1*x+b2*x**2+b3*x**3
-    nscC=c0+c1*x+c2*x**2+c3*x**3
-    nscD=d0+d1*x+d2*x**2+d3*x**3
+   # nscA=a0+a1*x+a2*x**2+a3*x**3#replase
+    #nscB=b0+b1*x+b2*x**2+b3*x**3#replase
+    #nscC=c0+c1*x+c2*x**2+c3*x**3#replase
+    #nscD=d0+d1*x+d2*x**2+d3*x**3#replace
+    nsc=[]
+    for i in range(n-1):
+        nsc.append(aa[i][0]+aa[i][1]*x+aa[i][2]*x**2+aa[i][3]*x**3)
 
-    nsc = [nscA, nscB, nscC, nscD]
-    #X = [x1, x2, x3, x4, x5]
-    #Y = [y1, y2, y3, y4, y5]
     eq = list_of_equations(X, Y, nsc)
-    aa = [a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3]
 
-    sol2 = sympy.solve(eq, aa)
-    for i in range(len(aa)):
-        aa[i] = sol2[aa[i]]
+
+    sol2 = sympy.solve(eq, aa_as_one_list)
+    for i in range(n-1):
+        for j in range(4):
+            aa[i][j]=sol2[aa[i][j]]
+
 
     #запишем коэффициенты в файл
     original_stdout = sys.stdout
     Coefficients = open('Coefficients', 'w')
     sys.stdout = Coefficients
-    for i in range(16):
-        if (i//4==0):
-            letter='a'
-        if (i//4==1):
-            letter='b'
-        if i//4==2:
-            letter='c'
-        if i//4==3:
-            letter='d'
-        print(letter+str(i%4)+'=')
-        print(aa[i])
+
+    for i in range(n-1):
+        for j in range(4):
+            print('a'+str(i)+str(j)+'=')
+            print(aa[i][j])
+
 
     sys.stdout = original_stdout
     Coefficients.close()
@@ -94,48 +132,66 @@ def draw_pieswize_f(nsc,X):
         p0.extend(p1)
     p0.show()
 
+
+
 #процедура, создающая список символьных переменных
-def list_of_symbols(n,j,letter):
+def list_of_symbols(n,letter):
+    #letter - буква, используемая для переменной
     list_symb=[None]*n
     for i in range(n):
-        stri=letter+str(j)+str(i)
-        stri = sympy.Symbol(letter+str(j)+str(i))
+        stri = sympy.Symbol(letter+str(i))
         list_symb[i]=stri
     return list_symb
 
-
+#процедура, создающая список списков символьных переменных
+def list_of_2dsymbols(n,m,letter):
+    list_symb=[None]*n
+    for i in range(n):
+        stri = list_of_symbols(m,letter+str(i))
+        list_symb[i]=stri
+    return list_symb
 
 def main():
-   x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5=sympy.symbols('x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5')
+   #x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5=sympy.symbols('x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5')#в идеале убрать
 
    x=sympy.Symbol('x')
    #a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)
    #f=a0+a1*x+a2*x**2+a3*x**3
 
-   #a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3=sympy.symbols(' a0, a1, a2, a3, b0, b1, b2, b3, c0, c1, c2, c3, d0, d1, d2, d3')
+   n=5
 
-   X=[x1,x2,x3,x4,x5]
-   Y=[y1,y2,y3,y4,y5]
-   [a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]=spline(X,Y)
+   X=list_of_symbols(n,'x')#new
+   Y=list_of_symbols(n,'y')#new
 
-   X_values=[0,1,2,3,4]
+   #[[a0,a1,a2,a3],[b0,b1,b2,b3],[c0,c1,c2,c3],[d0,d1,d2,d3]]=spline(n,X,Y)
+   SplineCoeff = spline(n, X, Y)
+
+   X_values=[-1,1,2,3,4]
    Y_values=[0,1,-2,-1,-1]
 
-
-
    #нарисуем график
-   aa=[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]
-   for i in range(len(aa)):
-       aa[i]=aa[i].subs({x1: X_values[0], y1: Y_values[0], x2: X_values[1], y2: Y_values[1], x3: X_values[2], y3: Y_values[2], x4: X_values[3],
-                         y4: Y_values[3], x5: X_values[4], y5: Y_values[4]})
-
-   #
+   sc_as_one_list = []
+   for i in SplineCoeff:
+       sc_as_one_list.extend(i)
+   #aa=[a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3]
 
 
-   nsc = [[a0,a1,a2,a3], [b0,b1,b2,b3], [c0,c1,c2,c3], [d0,d1,d2,d3]]
-   nsc = [[aa[0], aa[1], aa[2], aa[3]], [aa[4], aa[5], aa[6], aa[7]], [aa[8], aa[9], aa[10], aa[11]], [aa[12], aa[13], aa[14], aa[15]]]
+   for i in range(len(sc_as_one_list)):
+       for j in range(n):
+           sc_as_one_list[i]=sc_as_one_list[i].subs({X[j]:X_values[j],Y[j]:Y_values[j]})
+
+
+
+   nsc=[]
+   for i in range(n-1):
+       nsc.append([sc_as_one_list[4*i+0],sc_as_one_list[4*i+1],sc_as_one_list[4*i+2],sc_as_one_list[4*i+3]])
+
+   #nsc = [[aa[0], aa[1], aa[2], aa[3]], [aa[4], aa[5], aa[6], aa[7]], [aa[8], aa[9], aa[10], aa[11]], [aa[12], aa[13], aa[14], aa[15]]]
    #X = [x11, x22, x33, x44, x55]
    draw_pieswize_f(nsc,X_values )
+
+   #БИСПЛАЙН
+   #Z=[[z00,z10,z20,z30,z40,z50]]
 
 
 
