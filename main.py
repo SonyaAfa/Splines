@@ -5,6 +5,7 @@ from sympy import *
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import scatter
 import sys #для записи в файл
+from sympy.plotting import (plot_parametric,plot_implicit,plot3d,plot3d_parametric_line,plot3d_parametric_surface)
 
 
 #процедура вычисляющая коэффициента многочлена f(x)=a0+a1x+a2x**2+a3x**3
@@ -207,6 +208,19 @@ def draw_pieswize_f(nsc,X):
         p0.extend(p1)
     p0.show()
 
+#nsc - список функций
+def draw_3d_pieswize_f(nsc,X,Y):
+    x, y = sympy.symbols('x,y')
+    m=len(nsc)+1
+    n=len(nsc[0])+1
+    p0=plot3d(nsc[0][0],(x,X[0],X[1]),
+            (y,Y[0],Y[1]),show=False)
+    for i in range(m-1):
+        for j in range(n-1):
+            p1=plot3d(nsc[i][j],(x,X[j],X[j+1]),
+            (y,Y[i],Y[i+1]),show=False)
+            p0.extend(p1)
+    p0.show()
 
 #процедура, создающая список символьных переменных
 def list_of_symbols(n,letter):
@@ -240,9 +254,27 @@ def list_of_4dsymbols(n,m,k,l,letter):
         list_symb[i]=stri
     return list_symb
 
+#процудура создающая список многочленов по списку коэффициентов
+def create_bi_nsc(BiSplineCoeff):
+    x, y = sympy.symbols('x,y')
+    m=len(BiSplineCoeff)+1
+    n=len(BiSplineCoeff[0])+1
+    print('m,n',m,n)
+    nsc = []
+    for j in range(m - 1):
+        nscj = []
+        for i in range(n - 1):
+            f = 0
+            for ii in range(4):
+                for jj in range(4):
+                    f += BiSplineCoeff[j][i][jj][ii] * x ** ii * y ** jj
+            nscj.append(f)
+        nsc.append(nscj)
+    return nsc
+
 def main():
 
-   x=sympy.Symbol('x')
+   x, y = sympy.symbols('x,y')
    #a0,a1,a2,a3=polynom_with_boundary_conditions(x0,y0,x2,y2)
    #f=a0+a1*x+a2*x**2+a3*x**3
 
@@ -275,19 +307,18 @@ def main():
 
    #БИСПЛАЙН
    n=2
-   m=2
+   m=3
    X = list_of_symbols(n, 'x')
    Y = list_of_symbols(m, 'y')
-   Z=list_of_2dsymbols(n,m,'z')
+   Z=list_of_2dsymbols(m,n,'z')
 
-   X[0]=0
-   Y[0]=0
+
    BiSplineCoeff = bi_spline(X, Y,Z)
    print(BiSplineCoeff)
 
    X_values = [0,1]
-   Y_values = [0, 1]
-   Z_values=[[0,0],[1,2]]
+   Y_values = [0, 1,2]
+   Z_values=[[0,0],[1,2],[1,2]]
    # подставим значения в выражения для коэффициентов
    bsc_as_one_list = []
    for i in range(n - 1):
@@ -300,7 +331,11 @@ def main():
                                {X[ii]: X_values[ii], Y[jj]: Y_values[jj], Z[jj][ii]: Z_values[jj][ii]})
    print(BiSplineCoeff)
 
+   # нарисуем график
+   nsc = create_bi_nsc(BiSplineCoeff)
+   print('nsc',nsc)
 
+   draw_3d_pieswize_f(nsc, X_values, Y_values)
 
    #for i in range(len(bsc_as_one_list)):
   #     for j in range(n):
