@@ -44,6 +44,14 @@ def list_of_equations(X,Y,nsc):
         eq.append(eq4)
     return eq
 
+#процудура, добавляющая к списку eq уравнения, что все коэффициенты многочлена f равны нулю
+def polynom_eq_zerо_equations(f,eq,x):
+    #x = sympy.Symbol('x')
+    degf=degree(f,x)
+    for i in range(degf+1):
+        eqi=diff(f, x,i).subs(x, 0)
+        eq.append(eqi)
+
 #процедура составляющая список уравнений для 2-сплайна по массивам точек X,Y,Z
 # Z=[[F(x0,y0),F(x1,y0),F(x2,y0)..F(xn,y0)],[],..[]]
 def list_of_equations_for_bispline(X,Y,Z,nsc):
@@ -51,35 +59,48 @@ def list_of_equations_for_bispline(X,Y,Z,nsc):
     lx=len(X)
     ly=len(Y)
     eq=[]
+    #q=0
     #уравнения для значений в точках
     for i in range(lx-1):
         for j in range(ly-1):
-            eqij=nsc[j][i].subs({x:X[i],y:Y[j]})-Z[j][i]
-            eq.append(eqij)
+            eq1=nsc[j][i].subs({x:X[i],y:Y[j]})-Z[j][i]
+            eq2 = nsc[j][i].subs({x: X[i+1], y: Y[j]}) - Z[j][i+1]
+            eq3 = nsc[j][i].subs({x: X[i], y: Y[j+1]}) - Z[j+1][i]
+            eq4 = nsc[j][i].subs({x: X[i+1], y: Y[j+1]}) - Z[j+1][i+1]
+            eq.append(eq1)
+            eq.append(eq2)
+            eq.append(eq3)
+            eq.append(eq4)
+            #q+=4
+            #print(q,'ij',i,j)
     #уравнения для значений первых производных на границе прямоугольника
     for i in range(lx-1):
-        eq1=diff(nsc[0][i],x).subs(x,X[0])
-        eq2=diff(nsc[ly-2][i],x).subs(x,X[lx-1])
-        eq.append(eq1)
-        eq.append(eq2)
+        f=diff(nsc[0][i],y).subs(y,Y[0])
+        g = diff(nsc[ly - 2][i], y).subs(y, Y[ly - 1])
+        #q+=degree(f,x)+degree(g,x)
+        polynom_eq_zerо_equations(f,eq,x)
+        polynom_eq_zerо_equations(g, eq,x)
+        #print(q, 'i', i)
     for i in range(ly-1):
-        eq1=diff(nsc[i][0],y).subs(y,Y[0])
-        eq2=diff(nsc[i][lx-2],y).subs(y,Y[ly-1])
-        eq.append(eq1)
-        eq.append(eq2)
+        f=diff(nsc[i][0],x).subs(x,X[0])
+        g=diff(nsc[i][lx-2],x).subs(x,X[lx-1])
+        polynom_eq_zerо_equations(f, eq, y)
+        polynom_eq_zerо_equations(g, eq, y)
+        #q += degree(f, x) + degree(g, x)
+        #print(q, 'j', i)
     # уравнения для значений первых и вторых производных
     for i in range(1,lx-1):
         for j in range(ly-1):
-            eq1=diff(nsc[j][i-1],x).subs(x,X[i])-diff(nsc[j][i],x).subs(x,X[i])
-            eq2=diff(nsc[j][i-1],x,2).subs(x,X[i])-diff(nsc[j][i],x,2).subs(x,X[i])
-            eq.append(eq1)
-            eq.append(eq2)
+            f=diff(nsc[j][i-1],x).subs(x,X[i])-diff(nsc[j][i],x).subs(x,X[i])
+            g=diff(nsc[j][i-1],x,2).subs(x,X[i])-diff(nsc[j][i],x,2).subs(x,X[i])
+            polynom_eq_zerо_equations(f, eq, y)
+            polynom_eq_zerо_equations(g, eq, y)
     for j in range(1,ly-1):
         for i in range(lx-1):
-            eq1=diff(nsc[j-1][i],y).subs(y,Y[j])-diff(nsc[j][i],y).subs(y,Y[j])
-            eq2 = diff(nsc[j - 1][i], y,2).subs(y, Y[j]) - diff(nsc[j][i], y,2).subs(y, Y[j])
-            eq.append(eq1)
-            eq.append(eq2)
+            f=diff(nsc[j-1][i],y).subs(y,Y[j])-diff(nsc[j][i],y).subs(y,Y[j])
+            g = diff(nsc[j - 1][i], y,2).subs(y, Y[j]) - diff(nsc[j][i], y,2).subs(y, Y[j])
+            polynom_eq_zerо_equations(f, eq, x)
+            polynom_eq_zerо_equations(g, eq, x)
     return eq
 
 def spline(X,Y):
@@ -144,21 +165,32 @@ def bi_spline(X,Y,Z):
         nsc.append(nsci)
 
     eq=list_of_equations_for_bispline(X, Y, Z, nsc)
+    print('eq',eq)
+    print(len(eq))
+    print('aa',aa_as_one_list)
     sol = sympy.solve(eq, aa_as_one_list)
+    print('sola0030',sol[aa_as_one_list[2]])
+    print('sol',sol)
+
+
     for i in range(m-1):
         for j in range(n-1):
             for l in range(4):
                 for k in range(4):
+                    #aa[i][j][k][l]=1
                     aa[i][j][k][l]=sol[aa[i][j][k][l]]
 
     #запишем коэффициенты в файл
     original_stdout = sys.stdout
     BiCoefficients = open('BiCoefficients', 'w')
     sys.stdout = BiCoefficients
-    for i in range(n-1):
-        for j in range(4):
-            print('a'+str(i)+str(j)+'=')
-            print(aa[i][j])
+    for i in range(m - 1):
+        for j in range(n - 1):
+            for l in range(4):
+                for k in range(4):
+                    print('a' + str(i) + str(j) + str(k) + str(l) + '=')
+                    print(aa[i][j][k][l])
+
     sys.stdout = original_stdout
     BiCoefficients.close()
     return aa
@@ -248,8 +280,31 @@ def main():
    Y = list_of_symbols(m, 'y')
    Z=list_of_2dsymbols(n,m,'z')
 
-   #BiSplineCoeff = bi_spline(X, Y,Z)
+   X[0]=0
+   Y[0]=0
+   BiSplineCoeff = bi_spline(X, Y,Z)
+   print(BiSplineCoeff)
 
+   X_values = [0,1]
+   Y_values = [0, 1]
+   Z_values=[[0,0],[1,2]]
+   # подставим значения в выражения для коэффициентов
+   bsc_as_one_list = []
+   for i in range(n - 1):
+       for j in range(m - 1):
+           for k in range(4):
+               for l in range(4):
+                   for ii in range(n):
+                       for jj in range(m):
+                           BiSplineCoeff[j][i][k][l]=BiSplineCoeff[j][i][k][l].subs(
+                               {X[ii]: X_values[ii], Y[jj]: Y_values[jj], Z[jj][ii]: Z_values[jj][ii]})
+   print(BiSplineCoeff)
+
+
+
+   #for i in range(len(bsc_as_one_list)):
+  #     for j in range(n):
+    #       bsc_as_one_list[i]=bsc_as_one_list[i].subs({X[j]:X_values[j],Y[j]:Y_values[j],Z[j][i]})
 
 
 
