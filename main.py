@@ -45,16 +45,16 @@ def list_of_equations(X,Y,nsc):
     return eq
 
 #процедура составляющая список уравнений для 2-сплайна по массивам точек X,Y,Z
-# Z=[[F(x0,y0),F(x0,y1),F(x0,y2)..F(x0,yn)],[],..[]]
+# Z=[[F(x0,y0),F(x1,y0),F(x2,y0)..F(xn,y0)],[],..[]]
 def list_of_equations_for_bispline(X,Y,Z,nsc):
     x,y=sympy.symbols('x,y')
     lx=len(X)
     ly=len(Y)
     eq=[]
     #уравнения для значений в точках
-    for i in range(lx):
-        for j in range(ly):
-            eqij=nsc[j][i].subs({x:X[i],y:Y[j]})-Z[i][j]
+    for i in range(lx-1):
+        for j in range(ly-1):
+            eqij=nsc[j][i].subs({x:X[i],y:Y[j]})-Z[j][i]
             eq.append(eqij)
     #уравнения для значений первых производных на границе прямоугольника
     for i in range(lx-1):
@@ -82,47 +82,90 @@ def list_of_equations_for_bispline(X,Y,Z,nsc):
             eq.append(eq2)
     return eq
 
-def spline(n,X,Y):
+def spline(X,Y):
+    n=len(X)
+    if n!=len(Y):
+        print('something goes wrong')
     x=sympy.Symbol('x')
-    #a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3=sympy.symbols('a0,a1,a2,a3,b0,b1,b2,b3,c0,c1,c2,c3,d0,d1,d2,d3')#replase
-    aa=list_of_2dsymbols(n-1,4,'a')#new
-    aa_as_one_list=[]
+    aa=list_of_2dsymbols(n-1,4,'a')
+    aa_as_one_list=[]#нужен будет только как список переменных, относительно которых система уравнений
     for i in aa:
         aa_as_one_list.extend(i)
 
-   # nscA=a0+a1*x+a2*x**2+a3*x**3#replase
-    #nscB=b0+b1*x+b2*x**2+b3*x**3#replase
-    #nscC=c0+c1*x+c2*x**2+c3*x**3#replase
-    #nscD=d0+d1*x+d2*x**2+d3*x**3#replace
     nsc=[]
     for i in range(n-1):
         nsc.append(aa[i][0]+aa[i][1]*x+aa[i][2]*x**2+aa[i][3]*x**3)
 
     eq = list_of_equations(X, Y, nsc)
-
-
     sol2 = sympy.solve(eq, aa_as_one_list)
     for i in range(n-1):
         for j in range(4):
             aa[i][j]=sol2[aa[i][j]]
 
-
     #запишем коэффициенты в файл
     original_stdout = sys.stdout
     Coefficients = open('Coefficients', 'w')
     sys.stdout = Coefficients
-
     for i in range(n-1):
         for j in range(4):
             print('a'+str(i)+str(j)+'=')
             print(aa[i][j])
-
-
     sys.stdout = original_stdout
     Coefficients.close()
     return aa
 
+
+# Z=[[F(x0,y0),F(x1,y0),F(x2,y0)..F(xn,y0)],[],..[]]
+def bi_spline(X,Y,Z):
+    x, y = sympy.symbols('x,y')
+    n=len(X)
+    m=len(Y)
+    if m!=len(Z):
+        print('something goes wrong')
+    aa=list_of_4dsymbols(n-1,m-1,4,4,'a')
+    aa_as_one_list=[]#нужен будет только как список переменных, относительно которых система уравнений
+    for i in range(n-1):
+        for j in range(m-1):
+            for k in range(4):
+                for l in range(4):
+                    aa_as_one_list.append(aa[j][i][l][k])
+
+
+
+    nsc=[] #создадим список многочленов для сплайна
+    for i in range(m-1):
+        nsci=[]
+        for j in range(n-1):
+            f=0
+            for l in range(4):
+                for k in range(4):
+                    f=f+aa[i][j][k][l]*x**k*y**l
+            nsci.append(f)
+        nsc.append(nsci)
+
+    eq=list_of_equations_for_bispline(X, Y, Z, nsc)
+    sol = sympy.solve(eq, aa_as_one_list)
+    for i in range(m-1):
+        for j in range(n-1):
+            for l in range(4):
+                for k in range(4):
+                    aa[i][j][k][l]=sol[aa[i][j][k][l]]
+
+    #запишем коэффициенты в файл
+    original_stdout = sys.stdout
+    BiCoefficients = open('BiCoefficients', 'w')
+    sys.stdout = BiCoefficients
+    for i in range(n-1):
+        for j in range(4):
+            print('a'+str(i)+str(j)+'=')
+            print(aa[i][j])
+    sys.stdout = original_stdout
+    BiCoefficients.close()
+    return aa
+
+
 #nsc - список коэффициентов многочленов
+#X - список точек, определяющий сегменты на которых определены функции nsc
 def draw_pieswize_f(nsc,X):
     x = sympy.Symbol('x')
     l=len(nsc)
@@ -131,7 +174,6 @@ def draw_pieswize_f(nsc,X):
         p1=plot(nsc[i][0] + nsc[i][1] * x + nsc[i][2] * x ** 2 + nsc[i][3] * x ** 3,(x,X[i],X[i+1]),show=False)
         p0.extend(p1)
     p0.show()
-
 
 
 #процедура, создающая список символьных переменных
@@ -143,11 +185,26 @@ def list_of_symbols(n,letter):
         list_symb[i]=stri
     return list_symb
 
-#процедура, создающая список списков символьных переменных
+#процедуры, создающая список списков символьных переменных
 def list_of_2dsymbols(n,m,letter):
     list_symb=[None]*n
     for i in range(n):
         stri = list_of_symbols(m,letter+str(i))
+        list_symb[i]=stri
+    return list_symb
+
+
+def list_of_3dsymbols(n,m,k,letter):
+    list_symb=[None]*m
+    for i in range(m):
+        stri = list_of_2dsymbols(n,k,letter+str(i))
+        list_symb[i]=stri
+    return list_symb
+
+def list_of_4dsymbols(n,m,k,l,letter):
+    list_symb=[None]*m
+    for i in range(m):
+        stri = list_of_3dsymbols(l,n,k,letter+str(i))
         list_symb[i]=stri
     return list_symb
 
@@ -162,7 +219,7 @@ def main():
    X=list_of_symbols(n,'x')
    Y=list_of_symbols(n,'y')
 
-   SplineCoeff = spline(n, X, Y)
+   SplineCoeff = spline(X, Y)
 
    X_values=[-1,1,2,3]
    Y_values=[0,1,-2,-1]
@@ -185,7 +242,14 @@ def main():
    draw_pieswize_f(nsc,X_values )
 
    #БИСПЛАЙН
-   #Z=[[z00,z10,z20,z30,z40,z50]]
+   n=2
+   m=2
+   X = list_of_symbols(n, 'x')
+   Y = list_of_symbols(m, 'y')
+   Z=list_of_2dsymbols(n,m,'z')
+
+   #BiSplineCoeff = bi_spline(X, Y,Z)
+
 
 
 
