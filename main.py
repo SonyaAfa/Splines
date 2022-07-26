@@ -151,9 +151,6 @@ def bi_spline(X,Y,Z):
             for k in range(4):
                 for l in range(4):
                     aa_as_one_list.append(aa[j][i][l][k])
-
-
-
     nsc=[] #создадим список многочленов для сплайна
     for i in range(m-1):
         nsci=[]
@@ -161,18 +158,12 @@ def bi_spline(X,Y,Z):
             f=0
             for l in range(4):
                 for k in range(4):
-                    f=f+aa[i][j][k][l]*x**k*y**l
+                    f=f+aa[i][j][k][l]*x**l*y**k
             nsci.append(f)
         nsc.append(nsci)
 
     eq=list_of_equations_for_bispline(X, Y, Z, nsc)
-    print('eq',eq)
-    print(len(eq))
-    print('aa',aa_as_one_list)
     sol = sympy.solve(eq, aa_as_one_list)
-    print('sola0030',sol[aa_as_one_list[2]])
-    print('sol',sol)
-
 
     for i in range(m-1):
         for j in range(n-1):
@@ -306,7 +297,7 @@ def main():
    draw_pieswize_f(nsc,X_values )
 
    #БИСПЛАЙН
-   n=2
+   n=3
    m=3
    X = list_of_symbols(n, 'x')
    Y = list_of_symbols(m, 'y')
@@ -314,11 +305,11 @@ def main():
 
 
    BiSplineCoeff = bi_spline(X, Y,Z)
-   print(BiSplineCoeff)
+   print('BiSplineCoeff',BiSplineCoeff)
 
-   X_values = [0,1]
+   X_values = [0,1,3]
    Y_values = [0, 1,2]
-   Z_values=[[0,0],[1,2],[1,2]]
+   Z_values=[[0,0,0],[1,3,2],[1,2,4]]
    # подставим значения в выражения для коэффициентов
    bsc_as_one_list = []
    for i in range(n - 1):
@@ -337,9 +328,27 @@ def main():
 
    draw_3d_pieswize_f(nsc, X_values, Y_values)
 
-   #for i in range(len(bsc_as_one_list)):
-  #     for j in range(n):
-    #       bsc_as_one_list[i]=bsc_as_one_list[i].subs({X[j]:X_values[j],Y[j]:Y_values[j],Z[j][i]})
+   #проверка
+   #разница нужных и полученных значений в точках
+   for i in range(n-1):
+       for j in range(m-1):
+           d1=nsc[j][i].subs({x:X_values[i],y:Y_values[j]})-Z_values[j][i]
+           d2 = nsc[j][i].subs({x:X_values[i+1],y:Y_values[j]})-Z_values[j][i+1]
+           d3 = nsc[j][i].subs({x:X_values[i],y:Y_values[j+1]})-Z_values[j+1][i]
+           d4 = nsc[j][i].subs({x:X_values[i+1],y:Y_values[j+1]})-Z_values[j+1][i+1]
+           print('di',i,j,d1,d2,d3,d4)
+
+       # разница нужных и полученных значений производных
+   for i in range(1,n - 1):
+       for j in range(m - 1):
+           d1 = diff(nsc[j][i-1],x).subs({x: X_values[i]}) - diff(nsc[j][i],x).subs({x: X_values[i]})
+           print('di', i, j, d1)
+   for j in range(1,m - 1):
+       for i in range(n - 1):
+           d1 = diff(nsc[j-1][i],y).subs({y: Y_values[j]}) - diff(nsc[j][i],y).subs({y: Y_values[j]})
+           print('di', i, j, d1)
+
+
 
 
 
